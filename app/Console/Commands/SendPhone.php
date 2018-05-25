@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Console\Commands;
 
+use Illuminate\Console\Command;
 use App\AdminModel\Phonesource;
 use App\AdminModel\Webinfo;
 use App\User;
@@ -11,9 +12,43 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use QL\QueryList;
 use Zhuzhichao\IpLocationZh\Ip;
-
-class PhoneSubmitController extends Controller
+class SendPhone extends Command
 {
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'send:phones';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle()
+    {
+        $this->Phonesubmit();
+    }
+
+
     /**电话提交
      * @param Request $request
      */
@@ -36,7 +71,7 @@ class PhoneSubmitController extends Controller
             "Mozilla/5.0 (Linux; U; Android 7.0; zh-CN; SM-G9550 Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/40.0.2214.89 UCBrowser/11.7.0.953 Mobile Safari/537.36",
             "Mozilla/5.0 (Linux; Android 5.1; m3 note Build/LMY47I; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/48.0.2564.116 Mobile Safari/537.36 T7/9.3 baiduboxapp/9.3.0.10 (Baidu; P1 5.1)"
         ];
-       $url="http://m.ganxijsq.com/phone/crosscomplate?callback=success_jsonpCallback&phoneno=18715261528&host=http://m.ganxi360.net/&name=".urlencode('梁李良')."&note=".urlencode('单身倒计时看')."&_=1527141417976";
+        $url="http://m.ganxijsq.com/phone/crosscomplate?callback=success_jsonpCallback&phoneno=18715261528&host=http://m.ganxi360.net/&name=".urlencode('梁李良')."&note=".urlencode('单身倒计时看')."&_=1527141417976";
         $progxy=str_replace(PHP_EOL,'',file_get_contents("http://d.jghttp.golangapi.com/getip?num=1&type=1&pro=&city=0&yys=0&port=1&pack=240&ts=0&ys=0&cs=0&lb=1&sb=0&pb=4&mr=0&regions="));
         $ip=str_replace(substr($progxy,-5),'',$progxy);
         $location=Ip::find($ip);
@@ -72,20 +107,6 @@ class PhoneSubmitController extends Controller
         Log::info('电话:'.$newphone.'姓名:'.$name->name.'IP地址:'.$ip.'地区:'.$location[2].'返回结果:'.$result);
         //dd(curl_error($ch));
         curl_close($ch);
-    }
-
-    public function getUrlTile()
-    {
-        $urls=explode(PHP_EOL,Storage::get('urls.txt'));
-        foreach ($urls as $url)
-        {
-            $html = file_get_contents($url);
-            $data = QueryList::html($html)->rules([
-                'title' => ['title','text'],
-            ])->query()->getData();
-            Webinfo::firstOrCreate(["title"=>($data->all()[0]['title']),"url"=>$url]);
-        }
-
     }
 
 
